@@ -12,5 +12,9 @@ module "pubsub" {
     "topic-c" : {
       black_hole : true
     }
+    "topic-d" : {
+      dlq : true
+      custom_dlq_postfix : "-dlq"
+    }
   }
 }
