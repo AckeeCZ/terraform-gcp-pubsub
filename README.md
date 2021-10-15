@@ -59,10 +59,11 @@ No modules.
 | [google_pubsub_subscription.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription) | resource |
 | [google_pubsub_subscription.error_queue](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription) | resource |
 | [google_pubsub_subscription_iam_member.internal_subscribers](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription_iam_member) | resource |
-| [google_pubsub_subscription_iam_member.internal_subscribers_to_original_queues](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription_iam_member) | resource |
+| [google_pubsub_subscription_iam_member.internal_subscribers_to_source_subscriptions](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription_iam_member) | resource |
 | [google_pubsub_topic.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic) | resource |
 | [google_pubsub_topic.dlq](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic) | resource |
 | [google_pubsub_topic_iam_member.internal_publishers](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic_iam_member) | resource |
+| [google_pubsub_topic_iam_member.user_publishers](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic_iam_member) | resource |
 | [google_project.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
 
 ## Inputs
@@ -76,6 +77,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_dlq_subscriptions"></a> [dlq\_subscriptions](#output\_dlq\_subscriptions) | n/a |
 | <a name="output_subscriptions"></a> [subscriptions](#output\_subscriptions) | n/a |
 | <a name="output_topics"></a> [topics](#output\_topics) | n/a |
+| <a name="output_topics_users"></a> [topics\_users](#output\_topics\_users) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

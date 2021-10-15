@@ -1,22 +1,25 @@
 locals {
-  # TODO: check if foreach data type is still scricly using maps with string and rewrite
+  # TODO: check if foreach data type is still scricly using keys as string to rewrite
   subscriptions = toset(flatten([
     for q in google_pubsub_topic.default :
     [
       for j in keys(lookup(var.topics[q.name], "custom_subscriptions", { "${q.name}" : {} })) :
-      "${q.name}␟${j}" if !lookup(var.topics[q.name], "black_hole", false)
+      "${q.name}␟${j}" if !lookup(var.topics[q.name], "black_hole", false) && !lookup(var.topics[q.name], "no_subscription", false)
     ]
   ]))
   _dlq_subscriptions = [
     for q in google_pubsub_topic.default :
     {
-      for k, v in lookup(var.topics[q.name], "custom_subscriptions", { "${q.name}" : {
-        "dlq" : lookup(var.topics[q.name], "dlq", false)
-        "dlq_name" : lookup(var.topics[q.name], "custom_dlq_name", "${q.name}-${lookup(var.topics[q.name], "custom_dlq_postfix", "error")}")
-      } }) :
+      for k, v in lookup(var.topics[q.name], "custom_subscriptions",
+        {
+          "${q.name}" : {
+            "dlq" : lookup(var.topics[q.name], "dlq", false)
+            "custom_dlq_name" : lookup(var.topics[q.name], "custom_dlq_name", "${q.name}-${lookup(var.topics[q.name], "custom_dlq_postfix", "error")}")
+          }
+      }) :
       k => {
         dlq : lookup(v, "dlq", false),
-        dlq_name : lookup(v, "dlq_name", "${k}-${lookup(v, "custom_dlq_postfix", "error")}"),
+        custom_dlq_name : lookup(v, "custom_dlq_name", "${k}-${lookup(v, "custom_dlq_postfix", "error")}"),
       }
     }
   ]
@@ -24,7 +27,7 @@ locals {
     for i in local._dlq_subscriptions :
     [
       for k, v in i :
-      "${k}␟${v["dlq_name"]}" if v["dlq"] == true
+      "${k}␟${v["custom_dlq_name"]}" if v["dlq"] == true
     ]
   ]))
 }
@@ -64,7 +67,7 @@ resource "google_pubsub_subscription" "default" {
     for_each = [
       for i in local.dlq_subscriptions :
       # TODO: check if could be refactored in the future
-      i if substr(i, 0, length("${split("␟", each.value)[0]}␟")) == "${split("␟", each.value)[0]}␟"
+      i if substr(i, 0, length(split("␟", each.value)[1])) == split("␟", each.value)[1]
     ]
     content {
       dead_letter_topic = google_pubsub_topic.dlq[split("␟", dead_letter_policy.value)[1]].id
@@ -77,7 +80,11 @@ resource "google_pubsub_subscription" "default" {
           ),
           split("␟", each.value)[1],
           {
-            max_delivery_attempts : 5
+            max_delivery_attempts : lookup(
+              var.topics[split("␟", each.value)[0]],
+              "max_delivery_attempts",
+              5
+            )
           }
         ),
         "max_delivery_attempts",
@@ -96,7 +103,11 @@ resource "google_pubsub_subscription" "default" {
         ),
         split("␟", each.value)[1],
         {
-          minimum_backoff : "10s"
+          minimum_backoff : lookup(
+            var.topics[split("␟", each.value)[0]],
+            "minimum_backoff",
+            "10s"
+          )
         }
       ),
       "minimum_backoff",
@@ -111,7 +122,11 @@ resource "google_pubsub_subscription" "default" {
         ),
         split("␟", each.value)[1],
         {
-          maximum_backoff : "300s"
+          maximum_backoff : lookup(
+            var.topics[split("␟", each.value)[0]],
+            "maximum_backoff",
+            "300s"
+          )
         }
       ),
       "maximum_backoff",
@@ -123,15 +138,13 @@ resource "google_pubsub_subscription" "default" {
 
 resource "google_pubsub_subscription" "black_hole" {
   for_each = toset([for q in google_pubsub_topic.default : q.name if lookup(var.topics[q.name], "black_hole", false)])
-
-  name  = "${each.value}-black-hole"
-  topic = each.value
-
+  name     = "${each.value}-black-hole"
+  topic    = each.value
   expiration_policy {
     ttl = ""
   }
-
   message_retention_duration = "600s"
+  depends_on                 = [google_pubsub_topic.default]
 }
 
 resource "google_pubsub_topic" "dlq" {
@@ -143,4 +156,8 @@ resource "google_pubsub_subscription" "error_queue" {
   for_each = toset([for i in local.dlq_subscriptions : split("␟", i)[1]])
   topic    = each.value
   name     = each.value
+  expiration_policy {
+    ttl = ""
+  }
+  depends_on = [google_pubsub_topic.dlq]
 }

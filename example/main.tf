@@ -1,32 +1,51 @@
 variable "project" {
 }
 
+resource "google_service_account" "service_a" {
+  account_id   = "service-a"
+  display_name = "service-a"
+}
+
+resource "google_service_account" "service_b" {
+  account_id   = "service-b"
+  display_name = "service-b"
+}
+
 module "pubsub" {
   source  = "../"
   project = var.project
   topics = {
-    "topic-a" : {}
-    "topic-b" : {
-      dlq : true
-    }
-    "topic-c" : {
+    "topic-d" : {
       black_hole : true
     }
-    "topic-d" : {
-      dlq : true
-      custom_dlq_postfix : "dlq"
+    "topic-a" : {
+      minimum_backoff : "60s"
+      maximum_backoff : "120s"
     }
-    "topic-e" : {
+    "topic-b" : {
       dlq : true
-      custom_dlq_name : "averycustomthing-dlq"
-    }
+      custom_dlq_name : "abc"
+      users : [
+        "serviceAccount:${google_service_account.service_a.email}",
+      ]
+    },
     "topic-f" : {
       custom_subscriptions : {
-        topic-f-sub : {
+        f-sub : {
           dlq : true
           custom_dlq_name : "averycustomthing-for-topic-f"
-        }
-        topic-f-sub2 : {
+          max_delivery_attempts : 100
+        },
+        f-sub1 : {
+          users : [
+            "serviceAccount:${google_service_account.service_b.email}",
+          ]
+        },
+        f-sub2 : {
+          users : [
+            "serviceAccount:${google_service_account.service_a.email}",
+            "serviceAccount:${google_service_account.service_b.email}",
+          ]
         }
       }
     }

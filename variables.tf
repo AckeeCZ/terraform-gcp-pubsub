@@ -4,6 +4,6 @@ variable "topics" {
 }
 
 variable "project" {
-  description = "GCP project name"
+  description = "GCP project ID"
   type        = string
 }
