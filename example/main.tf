@@ -15,19 +15,23 @@ module "pubsub" {
   source  = "../"
   project = var.project
   topics = {
-    "topic-d" : {
-      black_hole : true
-    }
     "topic-a" : {
       minimum_backoff : "60s"
       maximum_backoff : "120s"
-    }
+    },
     "topic-b" : {
       dlq : true
       custom_dlq_name : "abc"
       users : [
         "serviceAccount:${google_service_account.service_a.email}",
       ]
+    },
+    "topic-d" : {
+      black_hole : true
+    },
+    "topic-e" : {
+      dlq : true
+      custom_dlq_name : "dlq"
     },
     "topic-f" : {
       custom_subscriptions : {

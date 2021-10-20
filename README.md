@@ -15,6 +15,9 @@ module "pubsub" {
     "topic-a" : {}
     "topic-b" : {
       dlq : true
+      users : [
+        "user:test@example.com",
+      ] 
     }
     "topic-c" : {
       black_hole : true
@@ -32,7 +35,13 @@ module "pubsub" {
  * black_hole [boolean] -- add subscription with fairly short 600s retention
  * dlq [boolean] -- add dead letter queue to the topic
  * custom_dlq_postfix [string] -- change `dlq` subscription postfix from `-error` to `-${custom_dlq_postfix}`
-
+ * custom_dlq_name [string] -- custom name for `dlq` topic & subscription
+ * max_delivery_attempts [number] -- check [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription#max_delivery_attempts)
+ * minimum_backoff [number] -- check [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription#minimum_backoff)
+ * custom_subscriptions [map(map(any))] -- accepts same arguments as topic, serves for custom subscription in case one is not enough
+ * users [list(string)] -- list of users (with type, e.g: `serviceAccount:..., ...`)
+ 
+Further examples are at [example](./example) folder.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

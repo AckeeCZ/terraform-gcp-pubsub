@@ -4,20 +4,5 @@ terraform {
     google = {
       source = "hashicorp/google"
     }
-    http = {
-      source = "hashicorp/http"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-    }
-    postgresql = {
-      source = "cyrilgdn/postgresql"
-    }
-    random = {
-      source = "hashicorp/random"
-    }
-    vault = {
-      source = "hashicorp/vault"
-    }
   }
 }
