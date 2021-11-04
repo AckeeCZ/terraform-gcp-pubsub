@@ -62,7 +62,7 @@ locals {
   subscriptions_users = toset(flatten([
     for i in keys(local._subscriptions_users_merge) :
     [
-      for j in local._subscriptions_users_merge[i] : "${i}:${j}"
+      for j in local._subscriptions_users_merge[i] : "${i}␟${j}"
     ]
   ]))
 }
@@ -76,7 +76,8 @@ resource "google_pubsub_topic_iam_member" "user_publishers" {
 
 resource "google_pubsub_subscription_iam_member" "user_subscribers" {
   for_each     = toset(local.subscriptions_users)
-  subscription = split("␟", each.value)[0]
+  subscription = split("␟", each.value)[1]
   role         = "roles/pubsub.subscriber"
-  member       = split("␟", each.value)[1]
+  member       = split("␟", each.value)[2]
+  depends_on   = [google_pubsub_subscription.default]
 }
