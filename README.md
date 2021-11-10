@@ -17,7 +17,7 @@ module "pubsub" {
       dlq : true
       users : [
         "user:test@example.com",
-      ] 
+      ]
     }
     "topic-c" : {
       black_hole : true
@@ -40,7 +40,8 @@ module "pubsub" {
  * minimum_backoff [number] -- check [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription#minimum_backoff)
  * custom_subscriptions [map(map(any))] -- accepts same arguments as topic, serves for custom subscription in case one is not enough
  * users [list(string)] -- list of users (with type, e.g: `serviceAccount:..., ...`), *beware* that any service account used as user has to be created before module usage
- 
+ * dlq_users [list(string)] -- list of users of DLQ subscription (with type, e.g: `serviceAccount:..., ...`), *beware* that any service account used as user has to be created before module usage
+
 Further examples are at [example](./example) folder.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

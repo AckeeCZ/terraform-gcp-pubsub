@@ -13,13 +13,15 @@ locals {
       for k, v in lookup(var.topics[q.name], "custom_subscriptions",
         {
           "${q.name}" : {
-            "dlq" : lookup(var.topics[q.name], "dlq", false)
-            "custom_dlq_name" : lookup(var.topics[q.name], "custom_dlq_name", "${q.name}-${lookup(var.topics[q.name], "custom_dlq_postfix", "error")}")
+            dlq : lookup(var.topics[q.name], "dlq", false)
+            custom_dlq_name : lookup(var.topics[q.name], "custom_dlq_name", "${q.name}-${lookup(var.topics[q.name], "custom_dlq_postfix", "error")}")
+            dlq_users : lookup(var.topics[q.name], "dlq_users", [])
           }
       }) :
       k => {
         dlq : lookup(v, "dlq", false),
         custom_dlq_name : lookup(v, "custom_dlq_name", "${k}-${lookup(v, "custom_dlq_postfix", "error")}"),
+        dlq_users : lookup(v, "dlq_users", [])
       }
     }
   ]
@@ -29,6 +31,16 @@ locals {
       for k, v in i :
       "${k}␟${v["custom_dlq_name"]}" if v["dlq"] == true
     ]
+  ]))
+  _dlq_subscriptions_users = toset(flatten([
+    for i in local._dlq_subscriptions :
+    flatten([
+      for k, v in i :
+      [
+        for u in v["dlq_users"] :
+        "${k}␟${v["custom_dlq_name"]}␟${u}" if v["dlq"] == true
+      ]
+    ])
   ]))
 }
 

@@ -2,27 +2,6 @@ data "google_project" "project" {
   project_id = var.project
 }
 
-resource "google_pubsub_subscription_iam_member" "internal_subscribers_to_source_subscriptions" {
-  for_each     = toset([for i in google_pubsub_subscription.default : i.name])
-  subscription = each.value
-  role         = "roles/pubsub.subscriber"
-  member       = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
-}
-
-resource "google_pubsub_topic_iam_member" "internal_publishers" {
-  for_each = toset([for i in google_pubsub_topic.dlq : i.name])
-  topic    = each.value
-  role     = "roles/pubsub.publisher"
-  member   = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
-}
-
-resource "google_pubsub_subscription_iam_member" "internal_subscribers" {
-  for_each     = toset([for i in google_pubsub_subscription.error_queue : i.name])
-  subscription = each.key
-  role         = "roles/pubsub.subscriber"
-  member       = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
-}
-
 locals {
   topics_users = {
     for q in google_pubsub_topic.default :
@@ -67,6 +46,27 @@ locals {
   ]))
 }
 
+resource "google_pubsub_subscription_iam_member" "internal_subscribers_to_source_subscriptions" {
+  for_each     = toset([for i in google_pubsub_subscription.default : i.name])
+  subscription = each.value
+  role         = "roles/pubsub.subscriber"
+  member       = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+}
+
+resource "google_pubsub_topic_iam_member" "internal_publishers" {
+  for_each = toset([for i in google_pubsub_topic.dlq : i.name])
+  topic    = each.value
+  role     = "roles/pubsub.publisher"
+  member   = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+}
+
+resource "google_pubsub_subscription_iam_member" "internal_subscribers" {
+  for_each     = toset([for i in google_pubsub_subscription.error_queue : i.name])
+  subscription = each.key
+  role         = "roles/pubsub.subscriber"
+  member       = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+}
+
 resource "google_pubsub_topic_iam_member" "user_publishers" {
   for_each = toset(local.topics_users_bindings_to_list)
   topic    = split("␟", each.value)[0]
@@ -80,4 +80,12 @@ resource "google_pubsub_subscription_iam_member" "user_subscribers" {
   role         = "roles/pubsub.subscriber"
   member       = split("␟", each.value)[2]
   depends_on   = [google_pubsub_subscription.default]
+}
+
+resource "google_pubsub_subscription_iam_member" "dlq_user_subscribers" {
+  for_each     = toset(local._dlq_subscriptions_users)
+  subscription = split("␟", each.value)[1]
+  role         = "roles/pubsub.subscriber"
+  member       = split("␟", each.value)[2]
+  depends_on   = [google_pubsub_subscription.error_queue]
 }

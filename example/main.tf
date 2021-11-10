@@ -69,6 +69,10 @@ module "pubsub" {
           dlq : true
           custom_dlq_name : "averycustomthing-for-topic-f"
           max_delivery_attempts : 100
+          dlq_users : [
+            "serviceAccount:${google_service_account.service_a.email}",
+            "serviceAccount:${google_service_account.service_b.email}",
+          ]
         },
         f-sub1 : {
           users : [
