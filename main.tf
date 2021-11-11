@@ -118,12 +118,12 @@ resource "google_pubsub_subscription" "default" {
           minimum_backoff : lookup(
             var.topics[split("␟", each.value)[0]],
             "minimum_backoff",
-            "10s"
+            "300s"
           )
         }
       ),
       "minimum_backoff",
-      "10s"
+      "300s"
     )
     maximum_backoff = lookup(
       lookup(
@@ -137,12 +137,12 @@ resource "google_pubsub_subscription" "default" {
           maximum_backoff : lookup(
             var.topics[split("␟", each.value)[0]],
             "maximum_backoff",
-            "300s"
+            "600s"
           )
         }
       ),
       "maximum_backoff",
-      "300s"
+      "600s"
     )
   }
   enable_message_ordering = lookup(
