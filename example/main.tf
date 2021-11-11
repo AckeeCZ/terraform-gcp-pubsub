@@ -54,7 +54,8 @@ module "pubsub" {
       custom_dlq_name : "abc"
       users : [
         "serviceAccount:${google_service_account.service_a.email}",
-      ]
+      ],
+      enable_message_ordering = true
     },
     "topic-d" : {
       black_hole : true

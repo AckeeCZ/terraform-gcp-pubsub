@@ -145,6 +145,25 @@ resource "google_pubsub_subscription" "default" {
       "300s"
     )
   }
+  enable_message_ordering = lookup(
+    lookup(
+      lookup(
+        var.topics[split("␟", each.value)[0]],
+        "custom_subscriptions",
+        {}
+      ),
+      split("␟", each.value)[1],
+      {
+        enable_message_ordering : lookup(
+          var.topics[split("␟", each.value)[0]],
+          "enable_message_ordering",
+          false
+        )
+      }
+    ),
+    "enable_message_ordering",
+    false
+  )
   depends_on = [google_pubsub_topic.default]
 }
 
