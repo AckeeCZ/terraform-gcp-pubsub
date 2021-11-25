@@ -164,6 +164,25 @@ resource "google_pubsub_subscription" "default" {
     "enable_message_ordering",
     false
   )
+  message_retention_duration = lookup(
+    lookup(
+      lookup(
+        var.topics[split("␟", each.value)[0]],
+        "custom_subscriptions",
+        {}
+      ),
+      split("␟", each.value)[1],
+      {
+        message_retention_duration : lookup(
+          var.topics[split("␟", each.value)[0]],
+          "message_retention_duration",
+          null
+        )
+      }
+    ),
+    "message_retention_duration",
+    null
+  )
   depends_on = [google_pubsub_topic.default]
 }
 
