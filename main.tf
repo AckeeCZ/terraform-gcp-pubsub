@@ -79,7 +79,7 @@ resource "google_pubsub_subscription" "default" {
     for_each = [
       for i in local.dlq_subscriptions :
       # TODO: check if could be refactored in the future
-      i if substr(i, 0, length(split("␟", each.value)[1])) == split("␟", each.value)[1]
+      i if split("␟", i)[0] == split("␟", each.value)[1]
     ]
     content {
       dead_letter_topic = google_pubsub_topic.dlq[split("␟", dead_letter_policy.value)[1]].id
