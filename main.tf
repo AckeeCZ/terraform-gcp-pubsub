@@ -64,7 +64,11 @@ resource "google_pubsub_subscription" "default" {
       ),
       split("␟", each.value)[1],
       {
-        ack_deadline_seconds : 60
+        ack_deadline_seconds : lookup(
+          var.topics[split("␟", each.value)[0]],
+          "ack_deadline_seconds",
+          60
+        )
       }
     ),
     "ack_deadline_seconds",
