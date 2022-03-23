@@ -55,6 +55,37 @@ resource "google_pubsub_subscription" "default" {
   topic = split("␟", each.value)[0]
   name  = split("␟", each.value)[1]
 
+  dynamic "push_config" {
+    for_each = [for i in [lookup(
+      lookup(
+        lookup(
+          var.topics[split("␟", each.value)[0]],
+          "custom_subscriptions",
+          {}
+        ),
+        split("␟", each.value)[1],
+        {
+          push_config : lookup(
+            var.topics[split("␟", each.value)[0]],
+            "push_config",
+            {}
+          )
+        }
+      ),
+      "push_config",
+      {}
+    )] : i if i != {}]
+    content {
+      dynamic "oidc_token" {
+        for_each = compact([lookup(push_config.value, "service_account_email", "")])
+        content {
+          service_account_email = oidc_token.value
+        }
+      }
+      push_endpoint = push_config.value["push_endpoint"]
+    }
+  }
+
   ack_deadline_seconds = lookup(
     lookup(
       lookup(
