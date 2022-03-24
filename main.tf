@@ -140,8 +140,8 @@ resource "google_pubsub_subscription" "default" {
     }
   }
 
-  retry_policy {
-    minimum_backoff = lookup(
+  dynamic "retry_policy" {
+    for_each = [for i in [lookup(
       lookup(
         lookup(
           var.topics[split("␟", each.value)[0]],
@@ -150,35 +150,20 @@ resource "google_pubsub_subscription" "default" {
         ),
         split("␟", each.value)[1],
         {
-          minimum_backoff : lookup(
+          retry_policy : lookup(
             var.topics[split("␟", each.value)[0]],
-            "minimum_backoff",
-            "300s"
+            "retry_policy",
+            {}
           )
         }
       ),
-      "minimum_backoff",
-      "300s"
-    )
-    maximum_backoff = lookup(
-      lookup(
-        lookup(
-          var.topics[split("␟", each.value)[0]],
-          "custom_subscriptions",
-          {}
-        ),
-        split("␟", each.value)[1],
-        {
-          maximum_backoff : lookup(
-            var.topics[split("␟", each.value)[0]],
-            "maximum_backoff",
-            "600s"
-          )
-        }
-      ),
-      "maximum_backoff",
-      "600s"
-    )
+      "retry_policy",
+      {}
+    )] : i if i != {}]
+    content {
+      minimum_backoff = retry_policy.value["minimum_backoff"]
+      maximum_backoff = retry_policy.value["maximum_backoff"]
+    }
   }
   enable_message_ordering = lookup(
     lookup(
