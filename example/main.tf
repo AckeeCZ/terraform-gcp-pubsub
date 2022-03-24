@@ -46,8 +46,10 @@ module "pubsub" {
   project = var.project
   topics = {
     "topic-a" : {
-      minimum_backoff : "60s"
-      maximum_backoff : "120s"
+      retry_policy = {
+        minimum_backoff : "60s"
+        maximum_backoff : "120s"
+      }
     },
     "topic-b" : {
       dlq : true
