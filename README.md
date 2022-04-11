@@ -32,6 +32,7 @@ module "pubsub" {
 
 `topics` map items can have define following keys:
 
+ * allow_dlq_users_to_push_into_dlq_topic [boolean] - once enabled, users from dlq_users can also push to dlq topics
  * black_hole [boolean] -- add subscription with fairly short 600s retention
  * dlq [boolean] -- add dead letter queue to the topic
  * custom_dlq_postfix [string] -- change `dlq` subscription postfix from `-error` to `-${custom_dlq_postfix}`
