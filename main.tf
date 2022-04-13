@@ -14,12 +14,14 @@ locals {
         {
           "${q.name}" : {
             dlq : lookup(var.topics[q.name], "dlq", false)
+            allow_dlq_users_to_push_into_dlq_topic : lookup(var.topics[q.name], "allow_dlq_users_to_push_into_dlq_topic", false)
             custom_dlq_name : lookup(var.topics[q.name], "custom_dlq_name", "${q.name}-${lookup(var.topics[q.name], "custom_dlq_postfix", "error")}")
             dlq_users : lookup(var.topics[q.name], "dlq_users", [])
           }
       }) :
       k => {
         dlq : lookup(v, "dlq", false),
+        allow_dlq_users_to_push_into_dlq_topic : lookup(v, "allow_dlq_users_to_push_into_dlq_topic", false),
         custom_dlq_name : lookup(v, "custom_dlq_name", "${k}-${lookup(v, "custom_dlq_postfix", "error")}"),
         dlq_users : lookup(v, "dlq_users", [])
       }
@@ -39,6 +41,16 @@ locals {
       [
         for u in v["dlq_users"] :
         "${k}␟${v["custom_dlq_name"]}␟${u}" if v["dlq"] == true
+      ]
+    ])
+  ]))
+  _dlq_publishers_users = toset(flatten([
+    for i in local._dlq_subscriptions :
+    flatten([
+      for k, v in i :
+      [
+        for u in v["dlq_users"] :
+        "${k}␟${v["custom_dlq_name"]}␟${u}" if v["dlq"] == true && v["allow_dlq_users_to_push_into_dlq_topic"] == true
       ]
     ])
   ]))

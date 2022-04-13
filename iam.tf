@@ -82,6 +82,13 @@ resource "google_pubsub_subscription_iam_member" "user_subscribers" {
   depends_on   = [google_pubsub_subscription.default]
 }
 
+resource "google_pubsub_topic_iam_member" "dlq_user_publishers" {
+  for_each = toset(local._dlq_publishers_users)
+  topic    = split("␟", each.value)[1]
+  role     = "roles/pubsub.publisher"
+  member   = split("␟", each.value)[2]
+}
+
 resource "google_pubsub_subscription_iam_member" "dlq_user_subscribers" {
   for_each     = toset(local._dlq_subscriptions_users)
   subscription = split("␟", each.value)[1]
