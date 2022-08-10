@@ -96,3 +96,30 @@ resource "google_pubsub_subscription_iam_member" "dlq_user_subscribers" {
   member       = split("␟", each.value)[2]
   depends_on   = [google_pubsub_subscription.error_queue]
 }
+
+resource "google_bigquery_table_iam_member" "bigquery_push_permissions" {
+  for_each = toset(flatten([for i in local.subscriptions : [for j in [lookup(
+    lookup(
+      lookup(
+        var.topics[split("␟", i)[0]],
+        "custom_subscriptions",
+        {}
+      ),
+      split("␟", i)[1],
+      {
+        bigquery_config : lookup(
+          var.topics[split("␟", i)[0]],
+          "bigquery_config",
+          {}
+        )
+      }
+    ),
+    "bigquery_config",
+    {}
+  )] : j["table"] if j != {}]]))
+  project    = split(".", each.value)[0]
+  dataset_id = split(".", each.value)[1]
+  table_id   = split(".", each.value)[2]
+  role       = "roles/bigquery.dataEditor"
+  member     = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+}
