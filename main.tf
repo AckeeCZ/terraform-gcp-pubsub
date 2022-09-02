@@ -59,6 +59,13 @@ locals {
 resource "google_pubsub_topic" "default" {
   for_each = toset(keys(var.topics))
   name     = each.value
+  dynamic "schema_settings" {
+    for_each = compact([lookup(google_pubsub_schema.default, each.key, null)])
+    content {
+      schema   = schema_settings.value.id
+      encoding = lookup(each.value, "schema_encoding", "JSON")
+    }
+  }
 }
 
 resource "google_pubsub_subscription" "default" {
