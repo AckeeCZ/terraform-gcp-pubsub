@@ -45,6 +45,8 @@ module "pubsub" {
  * users [list(string)] -- list of users (with type, e.g: `serviceAccount:..., ...`), *beware* that any service account used as user has to be created before module usage
  * dlq_users [list(string)] -- list of users of DLQ subscription (with type, e.g: `serviceAccount:..., ...`), *beware* that any service account used as user has to be created before module usage
  * push_config [map(string)] -- check [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_subscription#push_config)
+ * schema_definition [string] -- check [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_schema#definition)
+ * schema_type [string] -- check [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_schema#type)
 
 Further examples are at [example](./example) folder.
 

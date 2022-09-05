@@ -92,3 +92,50 @@ module "pubsub" {
     }
   }
 }
+
+// Example of Pub/Sub to BQ message pushing
+
+locals {
+  schema = [
+    {
+      name : "i",
+      type : "INTEGER",
+      mode : "NULLABLE",
+    },
+  ]
+}
+
+resource "google_bigquery_dataset" "dataset" {
+  dataset_id = "pubsub_to_bq_example_dataset"
+  location   = "EU"
+}
+
+resource "google_bigquery_table" "table" {
+  dataset_id          = google_bigquery_dataset.dataset.dataset_id
+  table_id            = "test_table"
+  deletion_protection = false
+
+  schema = jsonencode(local.schema)
+}
+
+module "pubsub_to_bq" {
+  source  = "../"
+  project = var.project
+  topics = {
+    "topic-a" : {
+      schema_definition : <<-EOT
+      syntax = "proto3";
+
+      message ProtocolBuffer {
+        int32 i = 1;
+      }
+      EOT
+      schema_type = "PROTOCOL_BUFFER"
+      bigquery_config : {
+        table            = "${var.project}.${google_bigquery_table.table.dataset_id}.${google_bigquery_table.table.table_id}"
+        use_topic_schema = true
+      }
+    }
+  }
+}
+

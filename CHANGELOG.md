@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support for topic schema
 
 ## [v2.2.0] - 2022-08-11
-### Add
+### Added
 - support for `bigquery_config` block
 
 ## [v2.1.0] - 2022-04-11

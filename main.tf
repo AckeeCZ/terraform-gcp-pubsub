@@ -1,5 +1,5 @@
 locals {
-  # TODO: check if foreach data type is still scricly using keys as string to rewrite
+  # TODO: check if foreach data type is still strictly using keys as string to rewrite
   subscriptions = toset(flatten([
     for q in google_pubsub_topic.default :
     [
