@@ -4,8 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.3.0] - 2022-09-02
+### Added
+- support for topic schema
+
+## [v2.2.0] - 2022-08-11
+### Added
+- support for `bigquery_config` block
+
 ## [v2.1.0] - 2022-04-11
-### Add
+### Added
 - support for `allow_dlq_users_to_push_into_dlq_topic` to enable push of dlq users to the dlq topic
 
 ## [v2.0.0] - 2022-03-24

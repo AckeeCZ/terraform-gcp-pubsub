@@ -1,5 +1,5 @@
 locals {
-  # TODO: check if foreach data type is still scricly using keys as string to rewrite
+  # TODO: check if foreach data type is still strictly using keys as string to rewrite
   subscriptions = toset(flatten([
     for q in google_pubsub_topic.default :
     [
@@ -59,6 +59,14 @@ locals {
 resource "google_pubsub_topic" "default" {
   for_each = toset(keys(var.topics))
   name     = each.value
+  dynamic "schema_settings" {
+    for_each = lookup(var.topics[each.value], "schema_definition", {}) != {} ? [1] : []
+    content {
+      schema   = google_pubsub_schema.default[each.key].id
+      encoding = lookup(var.topics[each.value], "schema_encoding", "JSON")
+    }
+  }
+  depends_on = [google_pubsub_schema.default]
 }
 
 resource "google_pubsub_subscription" "default" {
@@ -152,6 +160,34 @@ resource "google_pubsub_subscription" "default" {
     }
   }
 
+  dynamic "bigquery_config" {
+    for_each = [for i in [lookup(
+      lookup(
+        lookup(
+          var.topics[split("␟", each.value)[0]],
+          "custom_subscriptions",
+          {}
+        ),
+        split("␟", each.value)[1],
+        {
+          bigquery_config : lookup(
+            var.topics[split("␟", each.value)[0]],
+            "bigquery_config",
+            {}
+          )
+        }
+      ),
+      "bigquery_config",
+      {}
+    )] : i if i != {}]
+    content {
+      table               = bigquery_config.value["table"]
+      drop_unknown_fields = lookup(bigquery_config.value, "drop_unknown_fields", null)
+      use_topic_schema    = lookup(bigquery_config.value, "use_topic_schema", null)
+      write_metadata      = lookup(bigquery_config.value, "write_metadata", null)
+    }
+  }
+
   dynamic "retry_policy" {
     for_each = [for i in [lookup(
       lookup(
@@ -215,7 +251,7 @@ resource "google_pubsub_subscription" "default" {
     "message_retention_duration",
     null
   )
-  depends_on = [google_pubsub_topic.default]
+  depends_on = [google_pubsub_topic.default, google_bigquery_table_iam_member.bigquery_push_permissions]
 }
 
 resource "google_pubsub_subscription" "black_hole" {
